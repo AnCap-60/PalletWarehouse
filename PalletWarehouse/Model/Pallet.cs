@@ -9,13 +9,13 @@ namespace PalletWarehouse.Model
     {
         private const int selfWeight = 30;
 
-        private int id;
+        private readonly int id;
         public int Id => id;
 
         private List<Box> boxes;
         public Box[] Boxes => boxes.ToArray();
 
-        public override DateOnly ExpirationDate => boxes.Min(box => box.ExpirationDate);
+        public override DateOnly ExpirationDate => boxes.Count == 0 ? DateOnly.MaxValue : boxes.Min(box => box.ExpirationDate);
 
         public int Weight => boxes.Sum(box => box.Weight) + selfWeight;
 
@@ -37,7 +37,7 @@ namespace PalletWarehouse.Model
 
         public override string ToString()
         {
-            return $"ID: {Id}" + base.ToString() + $" Weight: {Weight},\n" +
+            return $"ID: {Id} " + base.ToString() + $" Weight: {Weight},\n" +
                 $"  Volume: {Volume}, Expiration date: {ExpirationDate}";
         }
     }

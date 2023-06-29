@@ -11,12 +11,18 @@ namespace PalletWarehouse.Application
     {
         private Pallet[] loadedPallets;
 
+        private bool run = true;
+
         public void Run()
         {
-
+            while (run)
+            {
+                MainMenu();
+            }
         }
 
-        private int GetChoice() => int.Parse(Console.ReadKey().KeyChar.ToString());
+        private static int GetChoice() => int.Parse(Console.ReadKey().KeyChar.ToString());
+        private static int GetInt() => int.Parse(Console.ReadLine());
 
         private void MenuPageWrapper(Action menuFunc)
         {
@@ -24,7 +30,7 @@ namespace PalletWarehouse.Application
 
             menuFunc();
 
-            Console.WriteLine("Нажмите любую клавишу для продолжения");
+            Console.WriteLine("\nНажмите любую клавишу для продолжения");
             Console.ReadKey();
         }
 
@@ -43,19 +49,22 @@ namespace PalletWarehouse.Application
             switch (choice)
             {
                 case 0:
+                    run = false;
                     return;
                 case 1:
                     MenuPageWrapper(ShowAllPallets);
                     break;
                 case 2:
+                    MenuPageWrapper(LoadPalletsPage);
                     break;
                 case 3:
+                    MenuPageWrapper(ShowGroupedPalletsPage);
                     break;
                 case 4:
                     break;
 
                 default:
-                    Console.WriteLine("Неверный ввод");
+                    Console.WriteLine("\nНеверный ввод");
                     Console.ReadKey();
                     break;
             }
@@ -63,7 +72,7 @@ namespace PalletWarehouse.Application
 
         private void ShowPallets(IEnumerable<Pallet> pallets)
         {
-            Console.WriteLine("Всего паллет загружено: " + pallets.Count());
+            Console.WriteLine("Паллет: " + pallets.Count());
 
             foreach (var pallet in pallets)
                 Console.WriteLine(pallet);
@@ -80,19 +89,25 @@ namespace PalletWarehouse.Application
             ShowPallets(loadedPallets);            
         }
 
-        private void LoadPallets()
+        private void LoadPalletsPage()
         {
             Console.WriteLine("Выберите способ получение паллет\n");
             Console.WriteLine("1 - Сгенерировать случайно");
-            Console.WriteLine("2 - Ввести с клавиатуры (долго)");
-            Console.WriteLine("3 - Загрузить из базы данных");
+            Console.WriteLine("2 - Загрузить из базы данных");
             Console.WriteLine("0 - Вернуться");
 
             int choice = GetChoice();
             switch (choice)
             {
                 case 1:
+                    MenuPageWrapper(GeneratePalletsPage);
+                    break;
+                case 2:
+                    MenuPageWrapper(LoadPalletsFromDBPage);
+                    break;
 
+                case 0:
+                    return;
 
                 default:
                     Console.WriteLine("Неверный ввод");
@@ -100,7 +115,17 @@ namespace PalletWarehouse.Application
             }
         }
 
-        private void GeneratePallets()
+        private void ShowGroupedPalletsPage()
+        {
+            ShowPallets(loadedPallets
+                .GroupBy(p => p.ExpirationDate)
+                .OrderBy(group => group.First().ExpirationDate)
+                .Select(g => g
+                    .OrderBy(p => p.Weight))
+                .SelectMany(p => p));
+        }
+
+        private void GeneratePalletsPage()
         {
             Console.Write("Сколько паллет сгенерировать?: ");
             if(!int.TryParse(Console.ReadLine(), out int count) || count < 1)
@@ -109,15 +134,37 @@ namespace PalletWarehouse.Application
                 return;
             }
 
+            loadedPallets = GeneratePallets(count);
+        }
+
+        public Pallet[] GeneratePallets(int count)
+        {
             Random random = new();
 
-            for (int i = 0; i < count; i++)
+            var pallets = new Pallet[count];
+            for (int i = 0; i < count; i++) //Цикл генерации самих паллет
             {
-                for (int j = 0; j < random.Next(0, 10); j++) //Цикл генерации коробок
+                int countOfBoxes = random.Next(0, 10);
+                List<Box> boxes = new(countOfBoxes);
+                for (int j = 0; j < countOfBoxes; j++) //Цикл генерации коробок для них
                 {
-
+                    int year = random.Next(1930, 2023);
+                    int month = random.Next(1, 12);
+                    int day = random.Next(1, 28);
+                    boxes.Add(new(random.Next(1, 20), random.Next(1, 20), random.Next(1, 20), random.Next(1, 20),
+                        new DateOnly(year, month, day)));
                 }
+                    
+
+                pallets[i] = new(i, random.Next(20, 40), random.Next(20, 40), random.Next(20, 40), boxes);
             }
+
+            return pallets;
+        }
+
+        private void LoadPalletsFromDBPage()
+        {
+
         }
     }
 }

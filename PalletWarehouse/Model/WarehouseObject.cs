@@ -17,7 +17,7 @@
 
         public override string ToString()
         {
-            return $"Width: {Width}, Height{Height}, Depth: {Depth}";
+            return $"Width: {Width}, Height: {Height}, Depth: {Depth}";
         }
     }
 }

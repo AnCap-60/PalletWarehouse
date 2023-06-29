@@ -10,9 +10,10 @@ namespace PalletWarehouse.Model
     {
         private const int expirationTime = 100;
 
-        public Box(int width, int height, int depth, int weight) : base(width, height, depth)
+        public Box(int width, int height, int depth, int weight, DateOnly productionDate) : base(width, height, depth)
         {
             this.Weight = weight;
+            this.ProductionDate = productionDate;
         }
 
         public DateOnly ProductionDate { get; set; }
