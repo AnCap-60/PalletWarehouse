@@ -27,6 +27,13 @@ namespace PalletWarehouse.Model
             this.boxes = boxes;
         }
 
+        public Pallet() : base()
+        {
+            id = GetHashCode();
+            boxes = new List<Box>(1);
+            AddBox(new Box());
+        }
+
         public void AddBox(Box box)
         {
             if (box.Width > Width || box.Depth > Depth)

@@ -22,7 +22,6 @@ namespace PalletWarehouse.Application
         }
 
         private static int GetChoice() => int.Parse(Console.ReadKey().KeyChar.ToString());
-        private static int GetInt() => int.Parse(Console.ReadLine());
 
         private void MenuPageWrapper(Action menuFunc)
         {
@@ -61,6 +60,7 @@ namespace PalletWarehouse.Application
                     MenuPageWrapper(ShowGroupedPalletsPage);
                     break;
                 case 4:
+                    MenuPageWrapper(ShowMostDurablePalletsPage);
                     break;
 
                 default:
@@ -93,7 +93,6 @@ namespace PalletWarehouse.Application
         {
             Console.WriteLine("Выберите способ получение паллет\n");
             Console.WriteLine("1 - Сгенерировать случайно");
-            Console.WriteLine("2 - Загрузить из базы данных");
             Console.WriteLine("0 - Вернуться");
 
             int choice = GetChoice();
@@ -101,9 +100,6 @@ namespace PalletWarehouse.Application
             {
                 case 1:
                     MenuPageWrapper(GeneratePalletsPage);
-                    break;
-                case 2:
-                    MenuPageWrapper(LoadPalletsFromDBPage);
                     break;
 
                 case 0:
@@ -117,12 +113,30 @@ namespace PalletWarehouse.Application
 
         private void ShowGroupedPalletsPage()
         {
-            ShowPallets(loadedPallets
+            ShowPallets(GroupedPalletsQuery(loadedPallets));
+        }
+
+        public static IEnumerable<Pallet> GroupedPalletsQuery(IEnumerable<Pallet> pallets)
+        {
+            return pallets
                 .GroupBy(p => p.ExpirationDate)
                 .OrderBy(group => group.First().ExpirationDate)
                 .Select(g => g
                     .OrderBy(p => p.Weight))
-                .SelectMany(p => p));
+                .SelectMany(p => p);
+        }
+
+        private void ShowMostDurablePalletsPage()
+        {
+            ShowPallets(MostDurablePaletsQuery(loadedPallets));
+        }
+
+        public static IEnumerable<Pallet> MostDurablePaletsQuery(IEnumerable<Pallet> pallets)
+        {
+            return pallets
+                .OrderByDescending(p => p.ExpirationDate)
+                .Take(3)
+                .OrderBy(p => p.Volume);
         }
 
         private void GeneratePalletsPage()
@@ -137,14 +151,14 @@ namespace PalletWarehouse.Application
             loadedPallets = GeneratePallets(count);
         }
 
-        public Pallet[] GeneratePallets(int count)
+        public static Pallet[] GeneratePallets(int count)
         {
             Random random = new();
 
             var pallets = new Pallet[count];
             for (int i = 0; i < count; i++) //Цикл генерации самих паллет
             {
-                int countOfBoxes = random.Next(0, 10);
+                int countOfBoxes = random.Next(1, 10);
                 List<Box> boxes = new(countOfBoxes);
                 for (int j = 0; j < countOfBoxes; j++) //Цикл генерации коробок для них
                 {
@@ -160,11 +174,6 @@ namespace PalletWarehouse.Application
             }
 
             return pallets;
-        }
-
-        private void LoadPalletsFromDBPage()
-        {
-
         }
     }
 }

@@ -15,6 +15,11 @@
             Width = width; Height = height; Depth = depth;
         }
 
+        public WarehouseObject()
+        {
+            Width = 1; Height = 1; Depth = 1;
+        }
+
         public override string ToString()
         {
             return $"Width: {Width}, Height: {Height}, Depth: {Depth}";

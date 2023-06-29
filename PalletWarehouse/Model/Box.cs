@@ -16,6 +16,12 @@ namespace PalletWarehouse.Model
             this.ProductionDate = productionDate;
         }
 
+        public Box() : base()
+        {
+            Weight = 1;
+            ProductionDate = new DateOnly(2023, 6, 29);
+        }
+
         public DateOnly ProductionDate { get; set; }
 
         public override DateOnly ExpirationDate => ProductionDate.AddDays(expirationTime);
